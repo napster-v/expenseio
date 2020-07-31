@@ -32,7 +32,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   HttpHeaders headers,
                                                                   HttpStatus status,
                                                                   WebRequest request) {
-        var error = new Error(ex.getLocalizedMessage(), HttpStatus.BAD_REQUEST, Codes.VALIDATION_ERROR);
+        final String message = ex.getLocalizedMessage()
+                                 .split(":")[0].strip();
+        var error = new Error(message, status, Codes.VALIDATION_ERROR);
         return generateResponse(error);
     }
 
@@ -66,7 +68,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                                                                             error.getDefaultMessage()))
                                                .collect(Collectors.toUnmodifiableList());
 
-        var message = String.format("Error in %d fields", fieldErrors.size());
+        var message = String.format("%d field errors.", fieldErrors.size());
         var error = new Error(message, HttpStatus.BAD_REQUEST, Codes.VALIDATION_ERROR, fieldErrors);
         return generateResponse(error);
     }
