@@ -8,15 +8,29 @@ import lombok.EqualsAndHashCode;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 public class Category extends AppBaseUserModel {
+    @NotEmpty
+    @NotBlank
+    @NotNull
     private String title;
+
+    @NotEmpty
+    @NotBlank
+    @NotNull
     private String colour;
+
     private String icon;
+
+    @NotNull
     private int budget;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private AppUser user;
 

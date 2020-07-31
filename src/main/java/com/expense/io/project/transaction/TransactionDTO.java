@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import javax.persistence.Transient;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.Date;
@@ -13,19 +16,20 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TransactionDTO extends BaseUserDTO {
-    @NotNull
+    @NotEmpty
+    @NotBlank
     private String title;
 
     @NotNull
     private Date date;
 
-
-    @PositiveOrZero(message = "Amount should always be a positive number.")
+    @PositiveOrZero
     @NotNull
     private Integer amount;
 
     private String description;
 
+    @Transient
     @NotNull
     private Integer categoryId;
 

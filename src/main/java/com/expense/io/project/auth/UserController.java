@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @RestController
@@ -33,13 +34,13 @@ public class UserController {
     }
 
     @PostMapping("register")
-    public AppUser createUser(@RequestBody AppUser user) {
+    public AppUser createUser(@RequestBody @Valid AppUser user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
     @PostMapping("login")
-    public ResponseEntity<TokenResponse> loginUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<TokenResponse> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
                                                                                        loginRequest.getPassword()));

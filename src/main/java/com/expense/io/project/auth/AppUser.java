@@ -3,6 +3,7 @@ package com.expense.io.project.auth;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,10 +11,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+@NoArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -24,38 +28,38 @@ public class AppUser implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false)
-    @NotBlank(message = "First name cannot be blank")
+    @NotEmpty
+    @NotBlank
+    @NotNull
     private String firstName;
 
-    @Column(nullable = false)
-    @NotBlank(message = "Last name cannot be blank")
+    @NotEmpty
+    @NotBlank
+    @NotNull
     private String lastName;
 
     @Email(message = "The email provided is not a valid email.")
-    @Column(nullable = false)
-    @NotBlank(message = "Email is required for password reset and cannot be blank.")
+    @NotEmpty
+    @NotBlank
+    @NotNull
     private String email;
 
-    @NotBlank(message = "Username cannot be blank.")
-    @Column(nullable = false)
+    @NotEmpty
+    @NotBlank
+    @NotNull
     private String username;
 
-    @NotBlank(message = "Password cannot be blank.")
-    @Column(nullable = false)
+    @NotEmpty
+    @NotBlank
+    @NotNull
     private String password;
     private boolean enabled = true;
     private boolean accountNonExpired = true;
     private boolean accountNonLocked = true;
     private boolean credentialsNonExpired = true;
+
     @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
-//    @OneToMany(mappedBy = "user")
-//    private List<Category> category;
-
-
-    public AppUser() {
-    }
 
     @JsonIgnore
     @Override
@@ -98,12 +102,4 @@ public class AppUser implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
-
-//    public List<Category> getCategory() {
-//        return category;
-//    }
-//
-//    public void setCategory(List<Category> category) {
-//        this.category = category;
-//    }
 }
