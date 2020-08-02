@@ -2,7 +2,6 @@ package com.expense.io.error;
 
 import com.expense.io.renderers.ErrorResponse;
 import org.hibernate.exception.ConstraintViolationException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -89,15 +88,15 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return generateResponse(error);
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    protected ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException exception) {
-        var message = exception.getCause()
-                               .getMessage()
-                               .split("\n")[1].strip();
-
-        var error = new Error(message, HttpStatus.SERVICE_UNAVAILABLE, Codes.INTEGRITY_ERROR);
-        return generateResponse(error);
-    }
+//    @ExceptionHandler(DataIntegrityViolationException.class)
+//    protected ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException exception) {
+//        var message = exception.getMostSpecificCause()
+//                               .getMessage()
+//                               .split("\n")[1].strip();
+//
+//        var error = new Error(message, HttpStatus.BAD_REQUEST, Codes.INTEGRITY_ERROR);
+//        return generateResponse(error);
+//    }
 
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex,
