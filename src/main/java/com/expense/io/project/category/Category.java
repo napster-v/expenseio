@@ -12,6 +12,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+/**
+ * @NotNull annotaion added for database level NOT NULL.
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
@@ -33,5 +36,4 @@ public class Category extends AppBaseUserModel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private AppUser user;
-
 }

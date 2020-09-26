@@ -15,7 +15,6 @@ public interface BaseUserRepository<T extends AppBaseUserModel> extends JpaRepos
                                                                         JpaSpecificationExecutor<T> {
     List<T> findAllByUser(AppUser user);
 
-
     Optional<T> findByUserAndId(AppUser user, Long id);
 
     @Transactional
