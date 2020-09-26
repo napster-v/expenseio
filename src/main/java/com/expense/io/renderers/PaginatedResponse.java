@@ -1,5 +1,7 @@
 package com.expense.io.renderers;
 
+import com.expense.io.base.dto.BaseDTO;
+import com.expense.io.base.model.AppBaseModel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -9,18 +11,26 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class PaginatedResponse<T> {
+public class PaginatedResponse<S extends AppBaseModel> {
     private int page;
-    private Number nextPage;
-    private Number previousPage;
-    private int count;
-    private int maxPages;
-    private long totalCount;
-    private String nextPageLink;
-    private String previousPageLink;
-    private List<T> data;
 
-    public PaginatedResponse(Page<T> pagedData, HttpServletRequest request) {
+    private Number nextPage;
+
+    private Number previousPage;
+
+    private int count;
+
+    private int maxPages;
+
+    private long totalCount;
+
+    private String nextPageLink;
+
+    private String previousPageLink;
+
+    private List<? extends BaseDTO> data;
+
+    public PaginatedResponse(Page<S> pagedData, HttpServletRequest request, List<? extends BaseDTO> data) {
         this.page = pagedData.getPageable()
                              .getPageNumber() + 1;
         this.nextPage = getNextPageable(pagedData);
@@ -30,10 +40,10 @@ public class PaginatedResponse<T> {
         this.totalCount = pagedData.getTotalElements();
         this.nextPageLink = getNextPageLink(pagedData, request);
         this.previousPageLink = getPreviousPageLink(pagedData, request);
-        this.data = pagedData.getContent();
+        this.data = data;
     }
 
-    public Number getNextPageable(Page<T> pagedData) {
+    public Number getNextPageable(Page<S> pagedData) {
         if (pagedData.hasNext()) {
             return pagedData.nextPageable()
                             .getPageNumber() + 1;
@@ -42,7 +52,7 @@ public class PaginatedResponse<T> {
         }
     }
 
-    public Number getPreviousPageable(Page<T> pagedData) {
+    public Number getPreviousPageable(Page<S> pagedData) {
         if (pagedData.hasPrevious()) {
             return pagedData.previousPageable()
                             .getPageNumber() + 1;
@@ -51,7 +61,7 @@ public class PaginatedResponse<T> {
         }
     }
 
-    public String getNextPageLink(Page<T> pagedData, HttpServletRequest request) {
+    public String getNextPageLink(Page<S> pagedData, HttpServletRequest request) {
         if (pagedData.hasNext()) {
             return String.format("%s?page=%d&size=%d",
                                  request.getRequestURL()
@@ -63,7 +73,7 @@ public class PaginatedResponse<T> {
         }
     }
 
-    public String getPreviousPageLink(Page<T> pagedData, HttpServletRequest request) {
+    public String getPreviousPageLink(Page<S> pagedData, HttpServletRequest request) {
         if (pagedData.hasPrevious()) {
             return String.format("%s?page=%d&size=%d",
                                  request.getRequestURL()

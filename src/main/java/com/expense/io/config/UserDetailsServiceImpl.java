@@ -2,6 +2,7 @@ package com.expense.io.config;
 
 import com.expense.io.project.auth.AppUser;
 import com.expense.io.project.auth.UserRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,10 +19,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.repository = repository;
     }
 
+    @Cacheable(value = "users", key = "#root.method.name")
     @Override
+    
     public UserDetails loadUserByUsername(String username) {
-        Optional<AppUser> user = repository.findByUsername(username);
-        if (user.isPresent()) return user.get();
-        else throw new UsernameNotFoundException("No such user");
+        return repository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("No such user"));
+//        Optional<AppUser> user = repository.findByUsername(username);
+//        if (user.isPresent()) return user.get();
+//        else throw new UsernameNotFoundException("No such user");
     }
 }

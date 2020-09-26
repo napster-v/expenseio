@@ -11,17 +11,21 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.Date;
+import java.time.LocalDate;
+
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TransactionDTO extends BaseUserDTO {
+
+    private static final long serialVersionUID = 1L;
+
     @NotEmpty
     @NotBlank
     private String title;
 
     @NotNull
-    private Date date;
+    private LocalDate date;
 
     @PositiveOrZero
     @NotNull

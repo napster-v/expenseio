@@ -1,5 +1,6 @@
 package com.expense.io.project.auth;
 
+import com.expense.io.project.profile.Profile;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -17,6 +18,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Main User class used for the project.
+ */
 @NoArgsConstructor
 @Getter
 @Setter
@@ -60,6 +64,9 @@ public class AppUser implements UserDetails {
 
     @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
+
+    @OneToOne(mappedBy = "user")
+    private Profile profile;
 
     @JsonIgnore
     @Override

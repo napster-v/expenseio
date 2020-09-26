@@ -1,6 +1,6 @@
 package com.expense.io.project.category;
 
-import com.expense.io.base.controller.BaseAuthController;
+import com.expense.io.base.controller.auth.BaseAuthControllerImpl;
 import com.expense.io.project.auth.UserRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,7 +11,8 @@ import java.util.List;
 
 @RequestMapping("category")
 @RestController
-public class CategoryController extends BaseAuthController<Category, CategoryDTO, CategoryService> {
+public class CategoryController
+        extends BaseAuthControllerImpl<Category, CategoryDTO, CategoryService, CategorySpecification> {
     public CategoryController(UserRepository repository,
                               CategoryService service) {
         super(repository, service);
