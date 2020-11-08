@@ -1,6 +1,5 @@
 package com.expense.io.filters;
 
-import com.expense.io.config.Settings;
 import com.expense.io.config.UserDetailsServiceImpl;
 import com.expense.io.error.Codes;
 import com.expense.io.error.Error;
@@ -16,13 +15,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -32,67 +27,67 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@Component
 public class JWTRequestFilter extends OncePerRequestFilter {
 
     private final UserDetailsServiceImpl userDetailsService;
-    private final JWT jwt;
-    private final AntPathMatcher pathMatcher;
-    private final Settings settings;
 
-    public JWTRequestFilter(UserDetailsServiceImpl userDetailsService,
-                            JWT jwt,
-                            AntPathMatcher pathMatcher, Settings settings) {
+    private final JWT jwt = new JWT();
+
+    public JWTRequestFilter(UserDetailsServiceImpl userDetailsService) {
         this.userDetailsService = userDetailsService;
-        this.jwt = jwt;
-        this.pathMatcher = pathMatcher;
-        this.settings = settings;
     }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest,
                                     HttpServletResponse httpServletResponse,
                                     FilterChain filterChain
-                                   ) throws ServletException, IOException {
+    ) throws ServletException, IOException {
 
-        logger.info("Filter hit!");
+//        logger.info("Filter hit!");
 
         Optional<String> header = Optional.ofNullable(httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION));
 
-
         try {
-            logger.info("checking for header" + header);
+//            logger.info("checking for header " + header);
             if (header.isPresent()) {
+                /* set authenticated user in Spring */
+//                logger.info("inside header is present");
 
+                /* Remove the word "Bearer" from the token */
                 final String token = header.get()
                                            .substring(7);
 
-                final Optional<String> username = Optional.ofNullable(jwt.extractUsername(token));
 
-                if (username.isPresent() && ensureContextIsNull()) {
-                    logger.warn("inside UPA");
+                /* will throw exception if username is null */
+                var username = jwt.extractUsername(token);
 
-                    final UserDetails user = userDetailsService.loadUserByUsername(username.get());
+                /* Below code is pretty self explanatory */
+                var user = userDetailsService.loadUserByUsername(username);
 
-                    final UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                var authenticationToken = new UsernamePasswordAuthenticationToken(user,
+                                                                                  null,
+                                                                                  user.getAuthorities());
 
-                    authenticationToken
-                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
 
-                    SecurityContextHolder.getContext()
-                                         .setAuthentication(authenticationToken);
-                    
-                    filterChain.doFilter(httpServletRequest, httpServletResponse);
-                }
-            } else throw new TokenNotFoundException("Token not present in header.");
+                SecurityContextHolder.getContext()
+                                     .setAuthentication(authenticationToken);
+
+            }
+
+            /* continue with the filter regardless if the header is present or not */
+            filterChain.doFilter(httpServletRequest,
+                                 httpServletResponse);
+
         } catch (MalformedJwtException | ExpiredJwtException | SignatureException | UsernameNotFoundException | TokenNotFoundException e) {
             logger.error(e);
             handleError(httpServletResponse, e);
         }
     }
 
-    protected void handleError(HttpServletResponse response, Exception exception) throws IOException {
+    protected void handleError(HttpServletResponse response,
+                               Exception exception) throws IOException {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         if (exception instanceof SignatureException) {
@@ -110,45 +105,46 @@ public class JWTRequestFilter extends OncePerRequestFilter {
         }
     }
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        logger.info(request.getServletPath());
-        return settings.getSkipPaths()
-                       .stream()
-                       .anyMatch(s -> pathMatcher.match(s, request.getServletPath()));
-    }
+//    @Override
+//    protected boolean shouldNotFilter(@NotNull HttpServletRequest request) {
+//        return Settings.getSkipPaths()
+//                       .stream()
+//                       .anyMatch(s -> pathMatcher.match(s,
+//                                                        request.getServletPath()));
+//    }
 
-
-    private Boolean ensureContextIsNull() {
-        final Optional<Authentication> authentication = Optional.ofNullable(
-                SecurityContextHolder.getContext()
-                                     .getAuthentication());
-        return authentication.isEmpty();
-    }
 
     private String tokenNotFound(TokenNotFoundException e) throws JsonProcessingException {
-        var error = new Error(e.getLocalizedMessage(), HttpStatus.UNAUTHORIZED, Codes.AUTH_TOKEN_NOT_FOUND);
+        var error = new Error(e.getLocalizedMessage(),
+                              HttpStatus.UNAUTHORIZED,
+                              Codes.AUTH_TOKEN_NOT_FOUND);
         var errorResponse = new ErrorResponse<>(error);
         final ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(errorResponse);
     }
 
     private String invalidToken(SignatureException e) throws JsonProcessingException {
-        var error = new Error(e.getLocalizedMessage(), HttpStatus.UNAUTHORIZED, Codes.INVALID_AUTH_TOKEN);
+        var error = new Error(e.getLocalizedMessage(),
+                              HttpStatus.UNAUTHORIZED,
+                              Codes.INVALID_AUTH_TOKEN);
         var errorResponse = new ErrorResponse<>(error);
         final ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(errorResponse);
     }
 
     private String expiredToken(ExpiredJwtException e) throws JsonProcessingException {
-        var error = new Error(e.getLocalizedMessage(), HttpStatus.UNAUTHORIZED, Codes.AUTH_TOKEN_EXPIRED);
+        var error = new Error(e.getLocalizedMessage(),
+                              HttpStatus.UNAUTHORIZED,
+                              Codes.AUTH_TOKEN_EXPIRED);
         var errorResponse = new ErrorResponse<>(error);
         final ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(errorResponse);
     }
 
     private String userNotFound(UsernameNotFoundException e) throws JsonProcessingException {
-        var error = new Error(e.getLocalizedMessage(), HttpStatus.UNAUTHORIZED, Codes.USER_NOT_FOUND);
+        var error = new Error(e.getLocalizedMessage(),
+                              HttpStatus.UNAUTHORIZED,
+                              Codes.USER_NOT_FOUND);
         var errorResponse = new ErrorResponse<>(error);
         final ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(errorResponse);

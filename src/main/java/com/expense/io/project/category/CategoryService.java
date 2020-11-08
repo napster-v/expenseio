@@ -23,7 +23,7 @@ public class CategoryService
         return CategoryMapper.INSTANCE.toModel(target);
     }
 
-    //    @Cacheable(cacheNames = "categories", key = "#root.method.name")
+//        @Cacheable(cacheNames = "categories", key = "#root.method.name")
     @Override
     public List<CategoryDTO> findAll(AppUser user) {
         return super.findAll(user);
